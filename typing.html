@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>js_type_writer</title>
+</head>
+
+<div id="typing">
+	<label>Span/p/div:</label> <span id="words"></span><span id="cursor">|</span><br><br>
+	<label>Placeholder:</label> <input id="words_pl" type="text" placeholder="..." /><br><br>
+	<label>Textarea placeholder:</label> <textarea id="words_pl_textarea" placeholder="..."></textarea>
+</div>
+
+<script>	
+    class typeWriter {
+		
+        constructor(html_id,strings,n_loops) {
+			
+            this.strings   = strings;
+            this.n_strings = strings.length;
+            this.strings_length = [];
+            var ii = 0;
+			for (var element of strings) {
+			  this.strings_length[ii] = element.length;
+			  ii++;
+			}
+			
+            this.typingSpeed = 90;
+            this.deleteSpeed = 30;
+            this.n_loops = n_loops;
+            this.isLoop  = true;
+            this.html_id = html_id;
+            this.isPlaceholder = this._isInputControlWithPlaceholder(html_id);
+            
+            /* for steps iteration */
+            this.i_loop = 0;
+			this.b = 0;
+			this.c = 0;
+			this.isTypingOrDeleting = 'typing';
+			this.iString = 0;
+			this.waitTime = 600;
+            
+            setTimeout(this._typing.bind(this), this.waitTime);
+        }
+		
+		_afterWaitTime() {
+			this.b=0;
+			this.c=this.strings_length[this.iString];
+			this.isTypingOrDeleting='removing';
+			this._typing();
+		}
+
+
+		_typing() {
+			if (this.html_id=='') return;
+			
+			if (this.isPlaceholder == true) {
+				document.getElementById(this.html_id).placeholder = this.strings[this.iString].substring(this.c, this.b);
+			} else {
+				document.getElementById(this.html_id).innerHTML = this.strings[this.iString].substring(this.c, this.b);
+			}
+			
+			if (this.b == this.strings_length[this.iString]){
+				if (this.iString == this.n_strings - 1) {
+					this.i_loop = this.i_loop +1;
+					if (this.i_loop == this.n_loops) return;
+				}
+				setTimeout(this._afterWaitTime.bind(this), this.waitTime);
+				return;
+			} else {
+				if (this.c != 0) {
+					this.c = this.c - 1;
+					if (this.c == 0) {
+						this.iString = this.iString + 1;
+						if (this.iString == this.strings.length) {
+							this.iString=0;
+						}
+					}
+				} else {
+					this.isTypingOrDeleting='typing';
+					this.b++;
+				}
+			}
+
+			if (this.isTypingOrDeleting == 'typing') {
+				setTimeout(this._typing.bind(this), this.typingSpeed);
+			} else {
+				setTimeout(this._typing.bind(this), this.deleteSpeed);
+			}
+		}
+		
+		_isInputControlWithPlaceholder(html_id) {
+			var element = document.getElementById(html_id);
+			var inputControls = ['input', 'textarea'];
+			return inputControls.indexOf(element.nodeName.toLowerCase()) !== -1;
+		}		
+    }
+    
+	var strings = new Array("You can type", "several sentences","and several times.");
+	const obj   = new typeWriter('words',strings,1);
+	const obj2  = new typeWriter('words_pl',["Ask here...", "...any doubt you have!"],3);
+	const obj3  = new typeWriter('words_pl_textarea',["Also usable on a textarea! 😁"],6);
+
+</script>
+
+<style>
+
+ /* === typing/blinking animation === */
+ 
+	#cursor{
+		opacity: 1;
+		-webkit-animation: blink 0.7s infinite;
+		-moz-animation: blink 0.7s infinite;
+		animation: blink 0.7s infinite;
+		}
+	@keyframes blink{
+		0% { opacity:1; }
+		50% { opacity:0; }
+		100% { opacity:1; }
+	}
+	@-webkit-keyframes blink{
+		0% { opacity:1; }
+		50% { opacity:0; }
+		100% { opacity:1; }
+	}
+	@-moz-keyframes blink{
+		0% { opacity:1; }
+		50% { opacity:0; }
+		100% { opacity:1; }
+	}	
+
+ /* === typing/blinking animation === */
+ 	
+	html,body{
+		background-color: rgb(6, 0, 25);
+		color:#888;
+		font-size: 50px;
+		font-family: Georgia, "Times New Roman",
+			 "Microsoft YaHei", STXihei,
+			 serif;
+	}
+
+	#typing{
+		margin:0.5em 5em;
+	}
+	#typing span{
+		color: #ccc;
+	}
+
+	input, textarea{
+		font-size:20px;
+		width:300px;
+		height:40px;
+		padding:0.2em 0.5em;
+		background-color:#000;
+		color:#ccc;
+	}
+	textarea{
+		height:100px;
+	}
+	input::placeholder, textarea::placeholder {
+		color: #999;
+	}
+
+</style>
